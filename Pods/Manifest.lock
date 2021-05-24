@@ -1,0 +1,46 @@
+PODS:
+  - Alamofire (5.4.3)
+  - IQKeyboardManager (6.5.6)
+  - R.swift (5.4.0):
+    - R.swift.Library (~> 5.3.0)
+  - R.swift.Library (5.3.0)
+  - RxCocoa (6.1.0):
+    - RxRelay (= 6.1.0)
+    - RxSwift (= 6.1.0)
+  - RxRelay (6.1.0):
+    - RxSwift (= 6.1.0)
+  - RxSwift (6.1.0)
+  - SVProgressHUD (2.2.5)
+
+DEPENDENCIES:
+  - Alamofire (~> 5.4.1)
+  - IQKeyboardManager (~> 6.5.6)
+  - R.swift (~> 5.4.0)
+  - RxCocoa
+  - RxSwift (~> 6.1.0)
+  - SVProgressHUD (~> 2.2.5)
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - IQKeyboardManager
+    - R.swift
+    - R.swift.Library
+    - RxCocoa
+    - RxRelay
+    - RxSwift
+    - SVProgressHUD
+
+SPEC CHECKSUMS:
+  Alamofire: e447a2774a40c996748296fa2c55112fdbbc42f9
+  IQKeyboardManager: 2a6e97afdafc7becf0cb17a9a8d795e3a980717f
+  R.swift: c533450b0f7dc494e0993f5f1a1db925d84c3006
+  R.swift.Library: 0fc583cb55a99e28901299cc451614cad1161962
+  RxCocoa: 5c51f02d562cbd94629f6c26cf0c80fe4ab8d343
+  RxRelay: 483e1a19fad961b41f0b0c0bee506f46c1ae14fe
+  RxSwift: a834e5c538e89eca0cae86f403f4fbf0336786ce
+  SVProgressHUD: 1428aafac632c1f86f62aa4243ec12008d7a51d6
+
+PODFILE CHECKSUM: 3657b2c8c5d86e677e5b75b7298fbbfe17c0bfe3
+
+COCOAPODS: 1.10.1
