@@ -5,12 +5,10 @@
 //  Created by Роман Мельник on 24.05.2021.
 //
 
-import Foundation
-import CoreLocation
 import RxCocoa
 import RxSwift
 
-class SearchCityNameVM: ViewModel {
+final class SearchCityNameVM: ViewModel {
     
     // MARK: - Properties
     public var suggestedPlacenames = BehaviorRelay(value: [Feature]())
@@ -28,8 +26,8 @@ class SearchCityNameVM: ViewModel {
                         self.suggestedPlacenames.accept(result.features)
                         self.loading.onNext(false)
                     } catch {
-                        print("Error in Data Decoding in fetchAPIData()", error)
                         self.loading.onNext(false)
+                        self.error.onNext("Error in Data Decoding")
                     }
                 case .failure(let failure):
                     self.parseError(failure: failure)

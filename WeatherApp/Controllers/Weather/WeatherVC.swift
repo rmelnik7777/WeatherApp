@@ -24,22 +24,17 @@ class WeatherVC: ViewController {
     
     // MARK: - Properties
     private let viewModel = WeatherVM()
-    var locationManager = CLLocationManager()
+    
 
     // MARK:- Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        if let userSearchedLocationName = UserDefaults.standard.string(forKey: "userSelectedPlacesnameValue") {
-            viewModel.retriveSavedLocationData(for: userSearchedLocationName)
-        } else {
-            checkLocationServies()
-        }
-        
-        viewModel.getWeather()
         setupBindings()
+        UserDefaultsHelper.shared.userPlacesname == nil ? viewModel.getLocalWeather() : viewModel.getWeather()
+        
     }
 
-
+    // MARK: - Binding
     private func setupBindings() {
         viewModel.loading
             .bind(to: self.rx.isAnimating).disposed(by: disposeBag)
@@ -60,10 +55,10 @@ class WeatherVC: ViewController {
                 self.presentDayHumLabel.text = "\(item.humidity)%"
                 self.presentDayWindLabel.text = "\(item.wind_speed) м/сек"
                 if !item.weather.isEmpty {
-                    let url = URL(string: "https://openweathermap.org/img/wn/" + item.weather[0].icon + ".png")
+                    let url = URL(string: self.viewModel.baseImageUrlString + item.weather[0].icon + ".png")
                     self.presentDayWeatherIcon.imageLoad(from: url!)
                 }
-                self.locationNameLabel.text = self.viewModel.locationName
+                self.locationNameLabel.text = UserDefaultsHelper.shared.userPlacesname
             })
             .disposed(by: disposeBag)
         viewModel.hourlyData
@@ -71,7 +66,7 @@ class WeatherVC: ViewController {
                     cell.forecastHourlyTemp.text = "\(item.temp)°C"
                 cell.forecastHourlyTime.text = item.dt.fromUnixTimeToTime()
 
-                let urlString = "https://openweathermap.org/img/wn/" + item.weather[0].icon + ".png"
+                let urlString = self.viewModel.baseImageUrlString + item.weather[0].icon + ".png"
                 if let url = URL(string: urlString) {
                     cell.forecastHourlyWeatherIcon.imageLoad(from: url)
                 } else {
@@ -85,7 +80,7 @@ class WeatherVC: ViewController {
             .bind(to: tableView.rx.items(cellIdentifier: R.reuseIdentifier.customTableViewCell.identifier, cellType: CustomTableViewCell.self)) { row, item, cell in
                 cell.forecastDate.text = "\(item.dt.dayOfWeek())"
                 if !item.weather.isEmpty {
-                    let url = URL(string: "https://openweathermap.org/img/wn/" + item.weather[0].icon + ".png")
+                    let url = URL(string: self.viewModel.baseImageUrlString + item.weather[0].icon + ".png")
                     cell.forecastWeatherIcon.imageLoad(from: url!)
                 }
                 
@@ -95,71 +90,19 @@ class WeatherVC: ViewController {
             .disposed(by: disposeBag)
     }
 
+    // MARK: - Actions
     @IBAction func showCityListButtonTapped(_ sender: Any) {
         guard let vc = Router.shared.getSearchCityNameVC() else {return}
         vc.update = { [weak self] in
-            guard let userSearchedLocationName = UserDefaults.standard.string(forKey: "userSelectedPlacesnameValue") else { return }
-            self?.viewModel.retriveSavedLocationData(for: userSearchedLocationName)
             self?.viewModel.getWeather()
         }
         present(vc, animated: true, completion: nil)
     }
+    
+    @IBAction func currentLocationTapped(_ sender: Any) {
+        self.viewModel.getLocalWeather()
+    }
+   
 }
 
-// MARK:- Location Feteching Part
-extension WeatherVC: CLLocationManagerDelegate {
-    
-    func checkLocationServies() {
-        if CLLocationManager.locationServicesEnabled() {
-            locationManager.delegate = self
-            locationManager.desiredAccuracy = kCLLocationAccuracyBest
-            checkLocationAuthorization()
-        } else {
-            self.showAlertView("Turn on Location Services", "Please Turn \"Location Services\" On From \"Settings -> Privacy -> Location Services -> Location Sevices\".")
-        }
-    }
-    
-    func checkLocationAuthorization() {
-        switch CLLocationManager.authorizationStatus() {
-        case .authorizedWhenInUse:
-            locationManager.requestLocation()
-            break
-        case .denied:
-            self.showAlertView("Turn on Location Access For this App","Please Turn \"Location Access Permission\" On From \"Settings -> Privacy -> Location Services -> OpenWeatherApp -> While Using the App\".")
-        case .notDetermined:
-            locationManager.requestWhenInUseAuthorization()
-        case .restricted:
-            self.showAlertView("Restricted By User", "This is possibly due to active restrictions such as parental controls being in place.")
-        case .authorizedAlways:
-            locationManager.requestLocation()
-        default:
-            self.showAlertView("Unknown Case!","This Permission is not handled in developing time.")
-        }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        checkLocationAuthorization()
-    }
 
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        viewModel.currentLocation = locations.last
-
-        if let lat = viewModel.currentLocation?.coordinate.latitude {
-            self.viewModel.latitude = lat
-            print("CLLocationManager - Latitude: ", self.viewModel.latitude)
-        }
-
-        if let lon = viewModel.currentLocation?.coordinate.longitude {
-            self.viewModel.longitude = lon
-            print("CLLocationManager - Longitude: ", self.viewModel.longitude)
-        }
-        self.viewModel.callReverseGeoCoder()
-    }
-
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        self.showAlertView("Error in Fetching Location", "Error Occured: \(error). Please Check Your Location On the Settings -> Privacy -> Location Services")
-    }
-    
- 
-
-}

@@ -13,4 +13,9 @@ class CustomTableViewCell: UITableViewCell {
     @IBOutlet weak var forecastDate: UILabel!
     @IBOutlet weak var forecastWeatherIcon: UIImageView!
     @IBOutlet weak var minMaxTemp: UILabel!
+    
+    // MARK: - Life cycle
+    override func awakeFromNib() {
+        super.awakeFromNib()
+    }
 }

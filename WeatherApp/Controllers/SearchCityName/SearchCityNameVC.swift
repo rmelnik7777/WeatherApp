@@ -5,11 +5,10 @@
 //  Created by Роман Мельник on 23.05.2021.
 //
 
-import RxCocoa
 import RxSwift
 import UIKit
 
-class SearchCityNameVC: ViewController {
+final class SearchCityNameVC: ViewController {
     
     // MARK: - Outlets
     @IBOutlet weak var searchBar: UISearchBar!
@@ -18,12 +17,6 @@ class SearchCityNameVC: ViewController {
     // MARK: - Properties
     private let viewModel = SearchCityNameVM()
     var update: (() -> ())?
-
-    var isSearchActive = false
-
-//    var userSelectedPlacesLatitude: Double = 0
-//    var userSelectedPlacesLongitude: Double = 0
-    var userSelectedPlacesname = ""
     
     // MARK:- viewDidLoad()
     override func viewDidLoad() {
@@ -53,14 +46,10 @@ class SearchCityNameVC: ViewController {
         tableView.rx.itemSelected
             .subscribe(onNext: { [weak self] indexPath in
                 guard let self = self else { return }
-//                self.userSelectedPlacesLatitude = self.viewModel.suggestedPlacenames.value[indexPath.row].geometry.coordinates[1]
-                UserDefaults.standard.set(self.viewModel.suggestedPlacenames.value[indexPath.row].geometry.coordinates[1], forKey: "userSelectedPlacesLatitudeValue")
-
-//                self.userSelectedPlacesLongitude = self.viewModel.suggestedPlacenames.value[indexPath.row].geometry.coordinates[0]
-                UserDefaults.standard.set(self.viewModel.suggestedPlacenames.value[indexPath.row].geometry.coordinates[0], forKey: "userSelectedPlacesLongitudeValue")
-
-                self.userSelectedPlacesname = self.viewModel.suggestedPlacenames.value[indexPath.row].place_name ?? "Error"
-                UserDefaults.standard.set(self.userSelectedPlacesname, forKey: "userSelectedPlacesnameValue")
+                UserDefaultsHelper.shared.saveUserLatitude(self.viewModel.suggestedPlacenames.value[indexPath.row].geometry.coordinates[1])
+                
+                UserDefaultsHelper.shared.saveUserLongitude(self.viewModel.suggestedPlacenames.value[indexPath.row].geometry.coordinates[0])
+                UserDefaultsHelper.shared.saveUserPlacesname(self.viewModel.suggestedPlacenames.value[indexPath.row].place_name ?? "NoName")
                 self.update!()
                 self.dismiss(animated: true, completion: nil)
             })
@@ -77,7 +66,6 @@ extension SearchCityNameVC: UISearchBarDelegate {
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         self.cancelSearching()
-        self.isSearchActive = false
     }
     
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
@@ -89,14 +77,10 @@ extension SearchCityNameVC: UISearchBarDelegate {
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(self.searchPlacesSuggestion), object: nil)
-        
-        self.perform(#selector(self.searchPlacesSuggestion), with:nil, afterDelay: 0.5)
-            isSearchActive = (searchBar.text?.isEmpty) == nil
+        self.searchPlacesSuggestion()
     }
     
-    func cancelSearching() {
-        isSearchActive = false
+    private func cancelSearching() {
         self.searchBar.resignFirstResponder()
         self.searchBar.text = ""
         self.viewModel.suggestedPlacenames.accept([])
@@ -105,7 +89,7 @@ extension SearchCityNameVC: UISearchBarDelegate {
         }
     }
     
-    @objc func searchPlacesSuggestion() {
+    private func searchPlacesSuggestion() {
         if let userTypedName = searchBar.text {
             if(!userTypedName.isEmpty) {
                 let trimmedUserTypedName = userTypedName.trimmingCharacters(in: .whitespacesAndNewlines)

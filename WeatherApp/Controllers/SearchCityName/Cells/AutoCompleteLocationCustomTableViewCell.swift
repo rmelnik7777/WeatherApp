@@ -9,6 +9,7 @@ import UIKit
 
 class AutoCompleteLocationCustomTableViewCell: UITableViewCell {
 
+    // MARK: - Outlets
     @IBOutlet weak var placeMarker: UIImageView!
     @IBOutlet weak var suggestedPlaceName: UILabel!
     
